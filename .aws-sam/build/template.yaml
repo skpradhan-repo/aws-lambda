@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'studentgrade
+
+  Sample SAM Template for studentgrade
+
+  '
+Globals:
+  Function:
+    Timeout: 20
+Resources:
+  StudentGradeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+  StudentGradeTopic:
+    Type: AWS::SNS::Topic
+  StudentGradePublishFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: StudentGradePublishFunction
+      Handler: com.samsoft.aws.lambda.studentgrade.StudentGradePublisherLambda::publish
+      Runtime: java11
+      MemorySize: 512
+      Policies:
+      - S3ReadPolicy:
+          BucketName:
+            Fn::Sub: ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+      - SNSPublishMessagePolicy:
+          TopicName:
+            Fn::GetAtt:
+            - StudentGradeTopic
+            - TopicName
+      Environment:
+        Variables:
+          STUDENT_GRADE_TOPIC:
+            Ref: StudentGradeTopic
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: StudentGradeBucket
+            Events: s3:ObjectCreated:*
+  StudentGradeConsumeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: StudentGradeConsumeFunction
+      Handler: com.samsoft.aws.lambda.studentgrade.StudentGradeConsumerLambda::consume
+      Runtime: java11
+      MemorySize: 512
+      Policies:
+      - S3ReadPolicy:
+          BucketName:
+            Fn::Sub: ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic:
+              Ref: StudentGradeTopic

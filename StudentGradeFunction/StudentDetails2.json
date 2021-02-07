@@ -1,0 +1,16 @@
+[{
+		"rollNo": "1001",
+		"name": "Samaresh",
+		"marks": "70"
+	},
+	{
+		"rollNo": "1002",
+		"name": "Peter",
+		"marks": "90"
+	},
+	{
+		"rollNo": "1003",
+		"name": "Roger",
+		"marks": "60"
+	}
+]
